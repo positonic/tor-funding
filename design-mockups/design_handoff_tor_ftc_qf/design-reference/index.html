@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tor × FTC — QF Campaign · Mobile prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #0e0e12; color: #E4EAF0; font-family: Inter, system-ui; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  button { font-family: inherit; }
+  .chain-strip::-webkit-scrollbar { display: none; }
+  .chain-strip { scrollbar-width: none; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes shimmer { 0% { background-position: -100% 0; } 100% { background-position: 200% 0; } }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="lib/tokens.jsx"></script>
+<script type="text/babel" src="lib/data.jsx"></script>
+<script type="text/babel" src="lib/primitives.jsx"></script>
+<script type="text/babel" src="lib/donation-panel.jsx"></script>
+<script type="text/babel" src="lib/screens-chrome.jsx"></script>
+<script type="text/babel" src="lib/pages.jsx"></script>
+<script type="text/babel" src="lib/design-system.jsx"></script>
+<script type="text/babel" src="lib/design-canvas.jsx"></script>
+<script type="text/babel" src="lib/landing.jsx"></script>
+<script type="text/babel" src="lib/desktop.jsx"></script>
+<script type="text/babel" src="lib/secondary-pages.jsx"></script>
+<script type="text/babel" src="lib/tablet.jsx"></script>
+<script type="text/babel" src="lib/og-pages.jsx"></script>
+
+<script type="text/babel">
+// ─── Tweak defaults ───
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "chainPattern": "scroll",
+  "theme": "light",
+  "campaignDay": 12,
+  "simulateLive": true
+}/*EDITMODE-END*/;
+
+// ─── Device frame ───
+function MobileFrame({ title, children, width = 390, height = 820, theme = 'light', tone }) {
+  const t = theme === 'dark' ? window.darkTheme : window.lightTheme;
+  return (
+    <div style={{
+      width, height, background: t.bg, borderRadius: 34, overflow: 'hidden',
+      position: 'relative', boxShadow: '0 24px 48px -18px rgba(120,56,200,0.25), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 10px #0B0B10, 0 0 0 11px #2A2A33',
+      fontFamily: 'Inter, system-ui',
+    }}>
+      {/* Status bar */}
+      <div style={{
+        height: 44, background: t.bg, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 22px', position: 'relative', zIndex: 5, flexShrink: 0,
+        fontFamily: 'Inter, system-ui', fontSize: 14, fontWeight: 600, color: t.text,
+      }}>
+        <span>9:41</span>
+        <div style={{
+          position: 'absolute', left: '50%', top: 8, transform: 'translateX(-50%)',
+          width: 110, height: 28, background: '#000', borderRadius: 999,
+        }}/>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+          <span style={{ fontFamily: '"Space Mono", monospace', fontSize: 11, opacity: 0.8 }}>onion</span>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="none"><rect x="0.5" y="0.5" width="12.6" height="10" rx="2" stroke={t.text} fill="none"/><rect x="2" y="2" width="9.6" height="7" rx="1" fill={t.text}/><rect x="13.7" y="3.5" width="1.3" height="4" rx="0.5" fill={t.text}/></svg>
+        </span>
+      </div>
+      <div style={{ position: 'absolute', top: 44, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─── Donation panel variant wrappers (for DC comparison) ───
+function VariantDefault({ project, theme }) {
+  const t = theme === 'dark' ? window.darkTheme : window.lightTheme;
+  const [chain, setChain] = React.useState(project.matching_eligible_chains[1] || project.matching_eligible_chains[0]);
+  return (
+    <div style={{ padding: 16, background: t.bgMuted, width: '100%', height: '100%', overflow: 'auto' }}>
+      <div style={{ fontFamily: '"Space Mono", monospace', fontSize: 11, color: t.textMuted, marginBottom: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Variant 01 — Conservative</div>
+      <DonationPanel project={project} chain={chain} onChainChange={setChain} theme={t} chainPattern="scroll"/>
+    </div>
+  );
+}
+function VariantWarm({ project, theme }) {
+  const t = theme === 'dark' ? window.darkTheme : window.lightTheme;
+  const [chain, setChain] = React.useState(project.matching_eligible_chains[1] || project.matching_eligible_chains[0]);
+  const [copied, setCopied] = React.useState(false);
+  const meta = window.CHAIN_META[chain];
+  const address = project.addresses[chain];
+  const copy = () => { setCopied(true); setTimeout(() => setCopied(false), 1600); };
+  return (
+    <div style={{ padding: 16, background: t.primarySoft, width: '100%', height: '100%', overflow: 'auto' }}>
+      <div style={{ fontFamily: '"Space Mono", monospace', fontSize: 11, color: t.primary, marginBottom: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Variant 02 — Warm card</div>
+      <section style={{
+        background: t.bg, borderRadius: 16, overflow: 'hidden',
+        border: `1px solid ${t.border}`, boxShadow: '0 12px 28px -10px rgba(120,56,200,0.2)',
+      }}>
+        {/* Warm header */}
+        <div style={{
+          padding: '18px 18px 14px', background: `linear-gradient(180deg, ${t.primarySoft} 0%, ${t.bg} 100%)`,
+        }}>
+          <div style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: t.primary }}>Donate directly</div>
+          <h2 style={{ margin: '4px 0 0', fontFamily: '"Space Grotesk", Inter, system-ui', fontSize: 22, fontWeight: 700, color: t.text, letterSpacing: '-0.02em' }}>
+            Every dollar, matched.
+          </h2>
+        </div>
+        {/* Segmented chain chips */}
+        <div style={{ padding: '0 14px 14px' }}>
+          <ChainScrollStrip chains={project.matching_eligible_chains} selected={chain} onSelect={setChain} theme={t}/>
+        </div>
+        {/* QR + address */}
+        <div style={{ padding: '0 18px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{
+            padding: 16, background: t.bg, borderRadius: 12,
+            border: `1.5px dashed ${t.primary}`,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+          }}>
+            <QRBlock value={address} size={220} fg={t.primary} bg="#fff" chainLetter={meta.symbol.slice(0,1)}/>
+            <div style={{ fontFamily: '"Space Mono", monospace', fontSize: 11, color: t.textMuted }}>
+              Scan · {meta.label} · {meta.symbol}
+            </div>
+          </div>
+          <AddressDisplay address={address} theme={t} copied={copied} onCopy={copy}/>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button fullWidth variant="solid" theme={t} onClick={copy} icon={copied ? <Icon.check/> : <Icon.copy/>}>
+              {copied ? 'Copied' : 'Copy'}
+            </Button>
+            <Button variant="outlinePrimary" theme={t} trailing={<Icon.external/>}>Wallet</Button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+function VariantScanner({ project, theme }) {
+  const t = theme === 'dark' ? window.darkTheme : window.lightTheme;
+  const [chain, setChain] = React.useState(project.matching_eligible_chains[1] || project.matching_eligible_chains[0]);
+  const [copied, setCopied] = React.useState(false);
+  const meta = window.CHAIN_META[chain];
+  const address = project.addresses[chain];
+  const copy = () => { setCopied(true); setTimeout(() => setCopied(false), 1600); };
+  return (
+    <div style={{ padding: 0, background: t.text, width: '100%', height: '100%', overflow: 'auto', color: t.bg }}>
+      <div style={{ padding: 16, color: '#fff' }}>
+        <div style={{ fontFamily: '"Space Mono", monospace', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginBottom: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Variant 03 — Scanner-first</div>
+        <div style={{ fontFamily: '"Space Grotesk", Inter, system-ui', fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 10 }}>
+          Point your wallet here
+        </div>
+        {/* Chain pill row — compact */}
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 14 }} className="chain-strip">
+          {project.matching_eligible_chains.map(c => {
+            const m = window.CHAIN_META[c];
+            const sel = c === chain;
+            return (
+              <button key={c} onClick={() => setChain(c)} style={{
+                flexShrink: 0, height: 36, padding: '0 12px',
+                background: sel ? '#fff' : 'transparent',
+                color: sel ? t.text : '#fff',
+                border: `1px solid ${sel ? '#fff' : 'rgba(255,255,255,0.25)'}`,
+                borderRadius: 999, fontFamily: 'Inter', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+              }}>
+                <ChainIcon symbol={c} size={14} color={sel ? t.text : '#fff'}/>
+                {m.symbol}
+              </button>
+            );
+          })}
+        </div>
+        {/* Enormous QR — scanner first */}
+        <div style={{ background: '#fff', padding: 18, borderRadius: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <QRBlock value={address} size={280} fg={t.text} bg="#fff" chainLetter={meta.symbol.slice(0,1)}/>
+          {/* corner crosshairs */}
+        </div>
+        <div style={{ fontFamily: 'Inter', fontSize: 12, color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginTop: 10 }}>
+          Or, copy the address:
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <div onClick={copy} style={{
+            padding: 12, background: 'rgba(255,255,255,0.08)', borderRadius: 8, cursor: 'pointer',
+            fontFamily: '"Space Mono", monospace', fontSize: 12, color: '#fff',
+            wordBreak: 'break-all', lineHeight: 1.55, letterSpacing: '0.01em',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            {address}
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <Button fullWidth size="lg" theme={{ ...t, primary: '#fff', textOnAccent: t.text }} onClick={copy} style={{ background: '#fff', color: t.text, border: 'none' }}>
+              {copied ? <Icon.check/> : <Icon.copy/>} {copied ? 'Copied' : 'Copy'}
+            </Button>
+            <Button size="lg" style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.3)' }} trailing={<Icon.external/>}>
+              Wallet
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tweaks panel ───
+function TweaksPanel({ tweaks, setTweaks, visible }) {
+  if (!visible) return null;
+  const field = (label, child) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <label style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A98A6' }}>{label}</label>
+      {child}
+    </div>
+  );
+  const inp = { padding: '7px 10px', background: '#18242F', color: '#E4EAF0', border: '1px solid #2A3744', borderRadius: 6, fontFamily: 'Inter', fontSize: 12 };
+  return (
+    <div style={{
+      position: 'fixed', right: 16, bottom: 16, zIndex: 1000,
+      width: 280, background: '#0B1017', border: '1px solid #2A3744', borderRadius: 12,
+      padding: 14, display: 'flex', flexDirection: 'column', gap: 12,
+      boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontFamily: '"Space Grotesk", Inter, system-ui', fontSize: 14, fontWeight: 700, color: '#fff' }}>Tweaks</div>
+        <div style={{ fontFamily: '"Space Mono", monospace', fontSize: 10, color: '#8A98A6' }}>live</div>
+      </div>
+      {field('Chain selector', (
+        <select value={tweaks.chainPattern} onChange={e => setTweaks({ ...tweaks, chainPattern: e.target.value })} style={inp}>
+          <option value="scroll">Scroll-snap chips</option>
+          <option value="dropdown">Tap-to-open dropdown</option>
+        </select>
+      ))}
+      {field('Theme', (
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['light','dark'].map(m => (
+            <button key={m} onClick={() => setTweaks({ ...tweaks, theme: m })} style={{
+              flex: 1, padding: '7px', background: tweaks.theme === m ? '#9338C1' : '#18242F',
+              color: tweaks.theme === m ? '#fff' : '#E4EAF0', border: '1px solid #2A3744', borderRadius: 6,
+              fontFamily: 'Inter', fontSize: 12, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+            }}>{m}</button>
+          ))}
+        </div>
+      ))}
+      {field(`Campaign day: ${tweaks.campaignDay} of 32`, (
+        <input type="range" min="1" max="32" value={tweaks.campaignDay}
+          onChange={e => setTweaks({ ...tweaks, campaignDay: parseInt(e.target.value, 10) })}
+          style={{ width: '100%', accentColor: '#9338C1' }}/>
+      ))}
+      {field('Simulated live', (
+        <div style={{ display: 'flex', gap: 6 }}>
+          {[{v: true, l:'On'}, {v: false, l:'Off'}].map(o => (
+            <button key={o.l} onClick={() => setTweaks({ ...tweaks, simulateLive: o.v })} style={{
+              flex: 1, padding: '7px', background: tweaks.simulateLive === o.v ? '#9338C1' : '#18242F',
+              color: tweaks.simulateLive === o.v ? '#fff' : '#E4EAF0', border: '1px solid #2A3744', borderRadius: 6,
+              fontFamily: 'Inter', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}>{o.l}</button>
+          ))}
+        </div>
+      ))}
+      <div style={{ fontSize: 10, color: '#556472', lineHeight: 1.4, paddingTop: 8, borderTop: '1px solid #2A3744' }}>
+        Changes persist to disk via <span style={{ fontFamily: '"Space Mono", monospace' }}>__edit_mode_set_keys</span>.
+      </div>
+    </div>
+  );
+}
+
+// ─── App ───
+function App() {
+  const [tweaks, setTweaks] = React.useState(() => {
+    try { const saved = JSON.parse(localStorage.getItem('tor-qf-tweaks') || 'null'); return { ...TWEAK_DEFAULTS, ...(saved || {}) }; } catch { return TWEAK_DEFAULTS; }
+  });
+  const [editVisible, setEditVisible] = React.useState(false);
+  const [toast, setToast] = React.useState(null);
+  const [feed, setFeed] = React.useState(window.SAMPLE_DATA.recent_donations);
+  const [newId, setNewId] = React.useState(-1);
+  const [totalsBump, setTotalsBump] = React.useState(0);
+
+  React.useEffect(() => { localStorage.setItem('tor-qf-tweaks', JSON.stringify(tweaks)); }, [tweaks]);
+
+  // Edit-mode protocol
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === '__activate_edit_mode') setEditVisible(true);
+      if (e.data.type === '__deactivate_edit_mode') setEditVisible(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const setTweak = (updates) => {
+    const next = { ...tweaks, ...updates };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: updates }, '*');
+  };
+
+  // Simulated live feed + toasts
+  React.useEffect(() => {
+    if (!tweaks.simulateLive) return;
+    const timer = setInterval(() => {
+      const chains = ['btc','eth','usdc','sol','zec_t','xmr'];
+      const ch = chains[Math.floor(Math.random() * chains.length)];
+      const amount = [5, 10, 25, 50, 100, 250][Math.floor(Math.random() * 6)];
+      const project_id = window.SAMPLE_DATA.projects[Math.floor(Math.random() * 3)].id;
+      const newEntry = {
+        project_id, chain: ch, amount_usd: amount,
+        verification: (ch === 'xmr' || ch === 'zec_t') ? 'view_key' : 'public',
+        minutes_ago: 0,
+      };
+      setFeed(f => [newEntry, ...f.map(x => ({ ...x, minutes_ago: x.minutes_ago + 1 }))].slice(0, 8));
+      setNewId(0);
+      setTotalsBump(v => v + amount);
+      setToast(
+        <>
+          <ChainIcon symbol={ch} size={14} color={tweaks.theme === 'dark' ? '#0B1017' : '#fff'}/>
+          <span style={{ fontWeight: 700 }}>${amount}</span>
+          <span style={{ opacity: 0.7 }}>to {window.SAMPLE_DATA.projects.find(p => p.id === project_id).name}</span>
+        </>
+      );
+      setTimeout(() => setToast(null), 2800);
+      setTimeout(() => setNewId(-1), 1500);
+    }, 6500);
+    return () => clearInterval(timer);
+  }, [tweaks.simulateLive]);
+
+  const toastFn = (msg) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
+  const project = window.SAMPLE_DATA.projects[0]; // Anti-Censorship Team
+  const theme = tweaks.theme;
+  const t = theme === 'dark' ? window.darkTheme : window.lightTheme;
+
+  return (
+    <>
+      <style>{`
+        body { background: ${theme === 'dark' ? '#0B1017' : '#ECE8F0'} !important;
+          background-image: radial-gradient(${theme === 'dark' ? 'rgba(147,56,193,0.08)' : 'rgba(147,56,193,0.06)'} 1px, transparent 1px);
+          background-size: 24px 24px; }
+      `}</style>
+      <DesignCanvas
+        initialZoom={0.8}
+        title={<><TorLogo size={22} color="#9338C1"/> <span style={{ fontFamily: '"Space Grotesk", Inter, system-ui', fontWeight: 700, letterSpacing: '-0.01em' }}>Tor × FTC — QF 2026</span> <span style={{ fontFamily: '"Space Mono", monospace', fontSize: 10, color: '#888', marginLeft: 4 }}>first pass · design system + donation flows</span></>}
+        storageKey="tor-qf-dc-v1"
+      >
+        <DCSection id="intro" title="01 · Overview" subtitle="Design system and the two load-bearing donation flows at mobile width. Tweaks top-right toggles theme, chain pattern, and campaign day.">
+          <DCArtboard id="ds" label="Design system" width={880} height={1700}>
+            <DesignSystem theme={theme} setTheme={(m) => setTweak({ theme: m })}/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="projpage" title="02 · /projects/[slug]" subtitle="The load-bearing page. 390×844 mobile. Full address (never truncated), 240×240 QR, sticky bottom CTA, view-key vs on-chain transparency cue.">
+          <DCArtboard id="proj-ac" label="Anti-Censorship Team" width={410} height={870}>
+            <MobileFrame theme={theme}>
+              <ProjectPage
+                project={{ ...project, total_donated_usd: project.total_donated_usd + totalsBump * 0.4 }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                chainPattern={tweaks.chainPattern}
+                variant="default"
+                onCopy={toastFn} day={tweaks.campaignDay}
+                feed={feed} projects={window.SAMPLE_DATA.projects} newEntryId={newId}
+              />
+            </MobileFrame>
+          </DCArtboard>
+          <DCArtboard id="proj-tb" label="Tor Browser" width={410} height={870}>
+            <MobileFrame theme={theme}>
+              <ProjectPage
+                project={{ ...window.SAMPLE_DATA.projects[1], total_donated_usd: window.SAMPLE_DATA.projects[1].total_donated_usd + totalsBump * 0.3 }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                chainPattern={tweaks.chainPattern}
+                variant="default"
+                onCopy={toastFn} day={tweaks.campaignDay}
+                feed={feed} projects={window.SAMPLE_DATA.projects} newEntryId={newId}
+              />
+            </MobileFrame>
+          </DCArtboard>
+          <DCArtboard id="proj-arti" label="Arti (3 chains)" width={410} height={870}>
+            <MobileFrame theme={theme}>
+              <ProjectPage
+                project={window.SAMPLE_DATA.projects[2]}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                chainPattern={tweaks.chainPattern}
+                variant="default"
+                onCopy={toastFn} day={tweaks.campaignDay}
+                feed={feed} projects={window.SAMPLE_DATA.projects} newEntryId={newId}
+              />
+            </MobileFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="pool" title="03 · /matching-pool" subtitle="Visually distinct from /projects/[slug]: orange accent instead of purple, dotted canvas, dashed hero boundary, pool-specific stats. A donor can't confuse the two flows.">
+          <DCArtboard id="pool-main" label="Fund the pool" width={410} height={870}>
+            <MobileFrame theme={theme} tone="pool">
+              <MatchingPoolPage
+                data={{ ...window.SAMPLE_DATA, matching_pool: { ...window.SAMPLE_DATA.matching_pool, total_usd: window.SAMPLE_DATA.matching_pool.total_usd + totalsBump * 0.3 } }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                chainPattern={tweaks.chainPattern}
+                onCopy={toastFn} day={tweaks.campaignDay}
+                newEntryId={newId}
+              />
+            </MobileFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="variants" title="04 · Donation panel — 3 directions" subtitle="Three treatments of the load-bearing component at mobile width. Pick one to carry forward, or mix aspects. All three share the same address logic and tap target rules.">
+          <DCArtboard id="var-1" label="Conservative (baseline)" width={390} height={800}>
+            <VariantDefault project={project} theme={theme}/>
+          </DCArtboard>
+          <DCArtboard id="var-2" label="Warm / card" width={390} height={800}>
+            <VariantWarm project={project} theme={theme}/>
+          </DCArtboard>
+          <DCArtboard id="var-3" label="Scanner-first" width={390} height={800}>
+            <VariantScanner project={project} theme={theme}/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="landing" title="06 · / landing" subtitle="Two equally-weighted CTAs. Animated USD counters. Top-3 leaderboard with inline bar fill (no chart lib on mobile). Dual-counter pattern makes the pool-vs-project distinction visible at first scroll.">
+          <DCArtboard id="landing-m" label="Landing · 390×844" width={410} height={870}>
+            <MobileFrame theme={theme}>
+              <LandingPage data={{ ...window.SAMPLE_DATA, totals: { ...window.SAMPLE_DATA.totals, total_donated_usd: window.SAMPLE_DATA.totals.total_donated_usd + totalsBump } }} theme={theme} setTheme={(m) => setTweak({ theme: m })} day={tweaks.campaignDay} onCopy={toastFn}/>
+            </MobileFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="grid" title="07 · /projects" subtitle="Full participating teams. Sort by projected match, raised, or name. Each card exposes chains at a glance so donors with chain preferences can filter visually.">
+          <DCArtboard id="grid-m" label="Projects grid · 390×844" width={410} height={870}>
+            <MobileFrame theme={theme}>
+              <ProjectsGridPage data={window.SAMPLE_DATA} theme={theme} setTheme={(m) => setTweak({ theme: m })} day={tweaks.campaignDay}/>
+            </MobileFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="og" title="08 · Per-project OG image" subtitle="1200×630 template. Takes project name + projected match as inputs. Per-project social share during the campaign. Same template, three projects to show it holds up at different name lengths.">
+          <DCArtboard id="og-ac" label="OG · Anti-Censorship" width={1200} height={630}>
+            <OGTemplate project={window.SAMPLE_DATA.projects[0]} matchUsd={window.SAMPLE_DATA.projects[0].projected_match_usd} theme="light"/>
+          </DCArtboard>
+          <DCArtboard id="og-tb" label="OG · Tor Browser" width={1200} height={630}>
+            <OGTemplate project={window.SAMPLE_DATA.projects[1]} matchUsd={window.SAMPLE_DATA.projects[1].projected_match_usd} theme="dark"/>
+          </DCArtboard>
+          <DCArtboard id="og-arti" label="OG · Arti" width={1200} height={630}>
+            <OGTemplate project={window.SAMPLE_DATA.projects[2]} matchUsd={window.SAMPLE_DATA.projects[2].projected_match_usd} theme="light"/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="desktop-projpage" title="09 · /projects/[slug] — desktop" subtitle="1280×820. Two-column composition. Donation panel stays sticky in the right rail so the donate action is always in view while reading. Hero scales to 48px display.">
+          <DCArtboard id="dt-proj-ac" label="Anti-Censorship Team · desktop" width={1280} height={820}>
+            <DesktopFrame theme={theme} url="donate-match.torproject.org/projects/anti-censorship">
+              <ProjectPageDesktop
+                project={{ ...project, total_donated_usd: project.total_donated_usd + totalsBump * 0.4 }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                chainPattern={tweaks.chainPattern}
+                onCopy={toastFn} day={tweaks.campaignDay}
+                feed={feed} projects={window.SAMPLE_DATA.projects} newEntryId={newId}
+              />
+            </DesktopFrame>
+          </DCArtboard>
+          <DCArtboard id="dt-proj-tb" label="Tor Browser · desktop" width={1280} height={820}>
+            <DesktopFrame theme={theme} url="donate-match.torproject.org/projects/tor-browser">
+              <ProjectPageDesktop
+                project={{ ...window.SAMPLE_DATA.projects[1], total_donated_usd: window.SAMPLE_DATA.projects[1].total_donated_usd + totalsBump * 0.3 }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                chainPattern={tweaks.chainPattern}
+                onCopy={toastFn} day={tweaks.campaignDay}
+                feed={feed} projects={window.SAMPLE_DATA.projects} newEntryId={newId}
+              />
+            </DesktopFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="desktop-pool" title="10 · /matching-pool — desktop" subtitle="Orange accent band + dashed boundary + dotted canvas carry over to desktop. The pool donation panel keeps orange accents so there's no confusion between pool and project flows.">
+          <DCArtboard id="dt-pool" label="Matching pool · desktop" width={1280} height={820}>
+            <DesktopFrame theme={theme} url="donate-match.torproject.org/matching-pool">
+              <MatchingPoolPageDesktop
+                data={{ ...window.SAMPLE_DATA, matching_pool: { ...window.SAMPLE_DATA.matching_pool, total_usd: window.SAMPLE_DATA.matching_pool.total_usd + totalsBump * 0.3 } }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                chainPattern={tweaks.chainPattern}
+                onCopy={toastFn} day={tweaks.campaignDay}
+                newEntryId={newId}
+              />
+            </DesktopFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="desktop-landing" title="11 · / landing — desktop" subtitle="Dual-CTA hero with live totals sidecar. Top-3 projects as a 3-up card row. How-it-works and sponsors sit side by side.">
+          <DCArtboard id="dt-landing" label="Landing · desktop" width={1280} height={820}>
+            <DesktopFrame theme={theme} url="donate-match.torproject.org">
+              <LandingPageDesktop
+                data={{ ...window.SAMPLE_DATA, totals: { ...window.SAMPLE_DATA.totals, total_donated_usd: window.SAMPLE_DATA.totals.total_donated_usd + totalsBump } }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                day={tweaks.campaignDay} onCopy={toastFn}
+              />
+            </DesktopFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="desktop-grid" title="12 · /projects — desktop" subtitle="Three-column card grid. Sort toggle as a segmented control in the header.">
+          <DCArtboard id="dt-grid" label="Projects grid · desktop" width={1280} height={820}>
+            <DesktopFrame theme={theme} url="donate-match.torproject.org/projects">
+              <ProjectsGridPageDesktop data={window.SAMPLE_DATA} theme={theme} setTheme={(m) => setTweak({ theme: m })} day={tweaks.campaignDay}/>
+            </DesktopFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="about" title="13 · /about" subtitle="QF explainer with a simple diagram, cooperative-transparency card, Sybil review process, and FAQ accordion. Lighter page — copy-led, one accent.">
+          <DCArtboard id="about-m" label="About · 390×844" width={410} height={870}>
+            <MobileFrame theme={theme}>
+              <AboutPageMobile theme={theme} setTheme={(m) => setTweak({ theme: m })} day={tweaks.campaignDay}/>
+            </MobileFrame>
+          </DCArtboard>
+          <DCArtboard id="about-d" label="About · desktop" width={1280} height={820}>
+            <DesktopFrame theme={theme} url="donate-match.torproject.org/about">
+              <AboutPageDesktop theme={theme} setTheme={(m) => setTweak({ theme: m })} day={tweaks.campaignDay}/>
+            </DesktopFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="sponsors" title="14 · /sponsors" subtitle="Logo wall — each sponsor card is an outbound link. Desktop hero surfaces total committed; mobile keeps it to a 2-up grid.">
+          <DCArtboard id="sponsors-m" label="Sponsors · 390×844" width={410} height={870}>
+            <MobileFrame theme={theme}>
+              <SponsorsPageMobile theme={theme} setTheme={(m) => setTweak({ theme: m })} day={tweaks.campaignDay}/>
+            </MobileFrame>
+          </DCArtboard>
+          <DCArtboard id="sponsors-d" label="Sponsors · desktop" width={1280} height={820}>
+            <DesktopFrame theme={theme} url="donate-match.torproject.org/sponsors">
+              <SponsorsPageDesktop theme={theme} setTheme={(m) => setTweak({ theme: m })} day={tweaks.campaignDay}/>
+            </DesktopFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="stats" title="15 · /stats" subtitle="Full transparency. Filterable donation table, per-chain breakdown, CSV export. Mobile collapses the chart to horizontal bars and the table to 1-line cards.">
+          <DCArtboard id="stats-m" label="Stats · 390×844" width={410} height={870}>
+            <MobileFrame theme={theme}>
+              <StatsPageMobile theme={theme} setTheme={(m) => setTweak({ theme: m })} day={tweaks.campaignDay}/>
+            </MobileFrame>
+          </DCArtboard>
+          <DCArtboard id="stats-d" label="Stats · desktop" width={1280} height={820}>
+            <DesktopFrame theme={theme} url="donate-match.torproject.org/stats">
+              <StatsPageDesktop theme={theme} setTheme={(m) => setTweak({ theme: m })} day={tweaks.campaignDay}/>
+            </DesktopFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="tablet" title="16 · Tablet (768×1024)" subtitle="iPad-width layouts for the three priority pages. Middle step between mobile (1-col) and desktop (2-col with sidebar). Donation panel and stats sit side-by-side at this width.">
+          <DCArtboard id="tablet-proj" label="Project · 768" width={790} height={1050}>
+            <TabletFrame theme={theme}>
+              <ProjectPageTablet
+                project={{ ...project, total_donated_usd: project.total_donated_usd + totalsBump * 0.4 }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                chainPattern={tweaks.chainPattern}
+                onCopy={toastFn} day={tweaks.campaignDay}
+                feed={feed} projects={window.SAMPLE_DATA.projects} newEntryId={newId}
+              />
+            </TabletFrame>
+          </DCArtboard>
+          <DCArtboard id="tablet-landing" label="Landing · 768" width={790} height={1050}>
+            <TabletFrame theme={theme}>
+              <LandingPageTablet
+                data={{ ...window.SAMPLE_DATA, totals: { ...window.SAMPLE_DATA.totals, total_donated_usd: window.SAMPLE_DATA.totals.total_donated_usd + totalsBump } }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                day={tweaks.campaignDay} onCopy={toastFn}
+              />
+            </TabletFrame>
+          </DCArtboard>
+          <DCArtboard id="tablet-pool" label="Matching pool · 768" width={790} height={1050}>
+            <TabletFrame theme={theme}>
+              <MatchingPoolPageTablet
+                data={{ ...window.SAMPLE_DATA, matching_pool: { ...window.SAMPLE_DATA.matching_pool, total_usd: window.SAMPLE_DATA.matching_pool.total_usd + totalsBump * 0.3 } }}
+                theme={theme} setTheme={(m) => setTweak({ theme: m })}
+                chainPattern={tweaks.chainPattern}
+                onCopy={toastFn} day={tweaks.campaignDay}
+                newEntryId={newId}
+              />
+            </TabletFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="og-more" title="17 · OG images · remaining pages" subtitle="One template, six pages. Same visual DNA so a stream of shares feels like one campaign. Pool page uses orange accent; all others use purple.">
+          <DCArtboard id="og-home" label="OG · / landing" width={1200} height={630}>
+            <OGPage kind="Campaign" eyebrow="May 19 – Jun 19, 2026" title="Every donation to Tor, matched." stat="$87,500" statLabel="Matching pool" substat="8 chains" substatLabel="Crypto assets" theme="light"/>
+          </DCArtboard>
+          <DCArtboard id="og-pool" label="OG · /matching-pool" width={1200} height={630}>
+            <OGPage kind="Matching pool" eyebrow="Fund the pool" title="Multiply every donor's impact." stat="$87,500" statLabel="Committed" substat="2 sponsors" substatLabel="Anchor + supporters" theme="light" tone="pool"/>
+          </DCArtboard>
+          <DCArtboard id="og-projects" label="OG · /projects" width={1200} height={630}>
+            <OGPage kind="All projects" eyebrow="3 teams participating" title="Pick a Tor project to support." stat="$42,310" statLabel="Raised so far" substat="1,247 donors" substatLabel="Unique donors" theme="light"/>
+          </DCArtboard>
+          <DCArtboard id="og-about" label="OG · /about" width={1200} height={630}>
+            <OGPage kind="How it works" eyebrow="Quadratic funding" title="Many small donations beat one big cheque." theme="dark"/>
+          </DCArtboard>
+          <DCArtboard id="og-sponsors" label="OG · /sponsors" width={1200} height={630}>
+            <OGPage kind="Sponsors" eyebrow="Match funders" title="The pool that multiplies every gift." stat="$87,500" statLabel="Committed" substat="2 sponsors" substatLabel="Anchor + supporters" theme="light" tone="pool"/>
+          </DCArtboard>
+          <DCArtboard id="og-stats" label="OG · /stats" width={1200} height={630}>
+            <OGPage kind="Full transparency" eyebrow="Every donation" title="On-chain, verifiable, exportable." stat="1,389" statLabel="Donations" substat="CSV" substatLabel="Full export" theme="dark"/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="notes" title="05 · Design notes" subtitle="How I'm thinking about the system. Open points for you to push back on.">
+          <DCArtboard id="notes-1" label="Design rationale" width={680} height={720}>
+            <div style={{ padding: 28, height: '100%', overflow: 'auto', background: t.bg, color: t.text, fontFamily: 'Inter' }}>
+              <h2 style={{ fontFamily: '"Space Grotesk", Inter, system-ui', fontWeight: 700, fontSize: 24, margin: 0, letterSpacing: '-0.02em' }}>Design notes — first pass</h2>
+              <p style={{ fontSize: 13, color: t.textMuted, marginTop: 4 }}>For your review before I expand to the landing + project grid.</p>
+              <h3 style={{ fontSize: 14, marginTop: 22, marginBottom: 6 }}>System committed</h3>
+              <ul style={{ fontSize: 13, lineHeight: 1.65, color: t.text, paddingLeft: 18, marginTop: 0 }}>
+                <li><strong>Purple 60 #9338C1</strong> for project donations. <strong>Orange 60 #D87717</strong> for the matching pool. They never share a page accent.</li>
+                <li><strong>Space Grotesk</strong> for display moments only (hero totals, page H1). <strong>Inter</strong> for all UI. <strong>Space Mono</strong> for every address and dollar amount that a donor needs to verify.</li>
+                <li>Addresses are chunked 4-char zebra — easier to scan than a solid string, never truncated with ellipsis. Tap or click anywhere on the block to copy.</li>
+                <li>44pt min tap target on every interactive element. Chain chips are a scroll-snap row by default; switch to a dropdown via Tweaks.</li>
+                <li>Cooperative transparency is foregrounded on every donation: shield icon for on-chain, eye icon for view-key. Never the word "private from us".</li>
+              </ul>
+              <h3 style={{ fontSize: 14, marginTop: 22, marginBottom: 6 }}>Matching pool distinction</h3>
+              <ul style={{ fontSize: 13, lineHeight: 1.65, color: t.text, paddingLeft: 18, marginTop: 0 }}>
+                <li>Orange accent, dotted canvas, dashed hero boundary — three signals, layered. A donor flipping between tabs can't mistake flows.</li>
+                <li>Pool also shows a chain-breakdown bar. Project pages show a donated-vs-match stacked bar. Different data, different visual.</li>
+              </ul>
+              <h3 style={{ fontSize: 14, marginTop: 22, marginBottom: 6 }}>What's live</h3>
+              <ul style={{ fontSize: 13, lineHeight: 1.65, color: t.text, paddingLeft: 18, marginTop: 0 }}>
+                <li>Animated counters (respect <code style={{ fontFamily: '"Space Mono", monospace', fontSize: 11 }}>prefers-reduced-motion</code>), auto-updating feed, toast notifications every ~6.5s, countdown tied to the Tweaks slider.</li>
+                <li>Toggle "Simulated live" off in Tweaks for a stable mock.</li>
+              </ul>
+              <h3 style={{ fontSize: 14, marginTop: 22, marginBottom: 6 }}>Open questions</h3>
+              <ul style={{ fontSize: 13, lineHeight: 1.65, color: t.text, paddingLeft: 18, marginTop: 0 }}>
+                <li>Is the Tor Project mark redrawn here acceptable, or should we wait for the exact brand SVGs from the Tor design team?</li>
+                <li>The transparency cue currently swaps icon+copy per chain. Do you want a persistent "transparency model" badge at page top instead?</li>
+                <li>Variant 03 (scanner-first) is intentionally experimental — inverted background, QR dominates. Worth carrying forward or scrapping?</li>
+              </ul>
+              <h3 style={{ fontSize: 14, marginTop: 22, marginBottom: 6 }}>Next up</h3>
+              <ul style={{ fontSize: 13, lineHeight: 1.65, color: t.text, paddingLeft: 18, marginTop: 0 }}>
+                <li>Tablet + desktop scaling for <code style={{ fontFamily: '"Space Mono", monospace', fontSize: 11 }}>/projects/[slug]</code>.</li>
+                <li><code style={{ fontFamily: '"Space Mono", monospace', fontSize: 11 }}>/sponsors</code>, <code style={{ fontFamily: '"Space Mono", monospace', fontSize: 11 }}>/about</code>, <code style={{ fontFamily: '"Space Mono", monospace', fontSize: 11 }}>/stats</code> lighter passes.</li>
+                <li>Dev handoff package — Tailwind config tokens, per-component prop shapes.</li>
+              </ul>
+            </div>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+      <Toast toast={toast} theme={t}/>
+      <TweaksPanel tweaks={tweaks} setTweaks={setTweak} visible={editVisible}/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

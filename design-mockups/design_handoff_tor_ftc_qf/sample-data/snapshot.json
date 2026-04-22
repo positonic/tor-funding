@@ -1,0 +1,70 @@
+{
+  "_comment": "Sample snapshot.json — mirrors §6 of the brief. The live site should poll this URL every 60s. All amounts are USD equivalents computed server-side at poll time.",
+  "generated_at": "2026-05-22T14:30:00Z",
+  "campaign": {
+    "starts_at": "2026-05-19T00:00:00Z",
+    "ends_at":   "2026-06-19T23:59:59Z"
+  },
+  "totals": {
+    "total_donated_usd": 42310.55,
+    "total_matching_pool_usd": 87500.00,
+    "unique_donors": 1247,
+    "donation_count": 1389
+  },
+  "matching_pool": {
+    "total_usd": 87500.00,
+    "by_chain": {
+      "btc": 30000,
+      "eth": 40000,
+      "sol": 5000,
+      "zec_t": 7500,
+      "xmr": 5000
+    },
+    "addresses": {
+      "btc":   { "label": "Bitcoin",       "ticker": "BTC",   "address": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", "uri": "bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", "verification": "public" },
+      "eth":  { "label": "Ethereum",       "ticker": "ETH",   "address": "0x742d35Cc6634C0532925a3b844Bc9e7595f0b1F8", "uri": "ethereum:0x742d35Cc6634C0532925a3b844Bc9e7595f0b1F8", "verification": "public" },
+      "sol":  { "label": "Solana",         "ticker": "SOL",   "address": "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5vpesT", "uri": "solana:DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5vpesT", "verification": "public" },
+      "zec_t":{ "label": "Zcash (transparent)", "ticker": "ZEC-t", "address": "t1RxY3vJq4kXSLGcqsqXAiqPGCbA8MsbCp2", "verification": "public" },
+      "xmr":  { "label": "Monero",         "ticker": "XMR",   "address": "44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A", "verification": "view_key" }
+    }
+  },
+  "projects": [
+    {
+      "id": "anti-censorship",
+      "name": "Anti-Censorship Team",
+      "short_desc": "Bridges, pluggable transports, and circumvention tools",
+      "matching_eligible_chains": ["btc", "eth", "sol", "zec_t", "xmr"],
+      "total_donated_usd": 12450.22,
+      "unique_donors": 412,
+      "projected_match_usd": 28300.10
+    },
+    {
+      "id": "tor-browser",
+      "name": "Tor Browser",
+      "short_desc": "The anonymous browser used by millions",
+      "matching_eligible_chains": ["btc", "eth", "sol", "zec_t"],
+      "total_donated_usd": 18200.00,
+      "unique_donors": 689,
+      "projected_match_usd": 35100.00
+    },
+    {
+      "id": "arti",
+      "name": "Arti — Tor in Rust",
+      "short_desc": "Next-generation Tor implementation",
+      "matching_eligible_chains": ["btc", "eth", "xmr"],
+      "total_donated_usd": 6890.10,
+      "unique_donors": 198,
+      "projected_match_usd": 14200.00
+    }
+  ],
+  "sponsors": [
+    { "name": "Human Rights Foundation", "committed_usd": 25000 },
+    { "name": "Web3 Privacy Now",        "committed_usd": 10000 }
+  ],
+  "recent_donations": [
+    { "project_id": "anti-censorship", "chain": "xmr",   "amount_usd": 25,  "verification_method": "view_key", "minutes_ago": 2 },
+    { "project_id": "tor-browser",     "chain": "btc",   "amount_usd": 50,  "verification_method": "public",   "minutes_ago": 4 },
+    { "project_id": "arti",            "chain": "eth",   "amount_usd": 120, "verification_method": "public",   "minutes_ago": 7 },
+    { "project_id": "anti-censorship", "chain": "sol",   "amount_usd": 35,  "verification_method": "public",   "minutes_ago": 11 }
+  ]
+}

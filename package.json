@@ -1,0 +1,27 @@
+{
+  "name": "tor-platform",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Tor Project × Funding the Commons quadratic funding campaign site + donation tracker",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace @tor/web run dev",
+    "build:web": "npm --workspace @tor/web run build",
+    "dev:tracker": "npm --workspace @tor/tracker run dev",
+    "build:tracker": "npm --workspace @tor/tracker run build",
+    "typecheck": "npm --workspaces --if-present run typecheck",
+    "lint": "npm --workspaces --if-present run lint",
+    "check": "npm run typecheck && npm run lint",
+    "test": "npm --workspaces --if-present run test"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

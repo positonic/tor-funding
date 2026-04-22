@@ -1,0 +1,42 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+dist/
+build/
+out/
+.next/
+*.tsbuildinfo
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tracker runtime artifacts
+apps/tracker/data/
+*.sqlite
+*.sqlite-journal
+*.db-wal
+*.db-shm
+
+# Design handoff bundle is reference-only; keep in repo
+# but exclude generated previews
+design-mockups/**/node_modules/
+
+# Logs
+*.log
+logs/

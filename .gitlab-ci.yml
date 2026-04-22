@@ -1,0 +1,98 @@
+# GitLab CI for TPA deployment
+# Two pipelines, path-filtered:
+#   - apps/web   → Next.js static export → rsync to TPA static CDN
+#   - apps/tracker → Docker image → push to TPA registry → redeploy on VM
+
+stages:
+  - install
+  - check
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+
+default:
+  image: node:${NODE_VERSION}-alpine
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - node_modules/
+      - apps/*/node_modules/
+      - packages/*/node_modules/
+
+install:
+  stage: install
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+      - apps/*/node_modules/
+      - packages/*/node_modules/
+    expire_in: 1 hour
+
+typecheck:
+  stage: check
+  needs: [install]
+  script:
+    - npm run typecheck
+
+lint:
+  stage: check
+  needs: [install]
+  script:
+    - npm run lint
+
+build-web:
+  stage: build
+  needs: [typecheck, lint]
+  rules:
+    - changes:
+        - apps/web/**/*
+        - packages/types/**/*
+        - config/**/*
+  script:
+    - npm run build:web
+  artifacts:
+    paths:
+      - apps/web/out/
+    expire_in: 1 week
+
+deploy-web-staging:
+  stage: deploy
+  needs: [build-web]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - apps/web/**/*
+        - packages/types/**/*
+        - config/**/*
+  script:
+    # Placeholder — actual rsync target comes from Anarcat (§17.1 task 6)
+    - echo "rsync -a apps/web/out/ tpa-cdn:/var/www/donate-match-staging/"
+
+build-tracker:
+  stage: build
+  needs: [typecheck, lint]
+  rules:
+    - changes:
+        - apps/tracker/**/*
+        - packages/types/**/*
+        - config/**/*
+  script:
+    # Placeholder — actual registry target comes from Anarcat (§17.1 task 5)
+    - echo "docker build -t registry.torproject.org/tor-platform/tracker:$CI_COMMIT_SHA apps/tracker"
+    - echo "docker push registry.torproject.org/tor-platform/tracker:$CI_COMMIT_SHA"
+
+deploy-tracker-staging:
+  stage: deploy
+  needs: [build-tracker]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - apps/tracker/**/*
+        - packages/types/**/*
+        - config/**/*
+  script:
+    - echo "ssh tpa-vm 'docker pull ... && docker restart tracker'"
