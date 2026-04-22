@@ -8,6 +8,13 @@
       "when": 1776870724570,
       "tag": "0000_natural_kronos",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1776881146345,
+      "tag": "0001_small_toxin",
+      "breakpoints": true
     }
   ]
 }
