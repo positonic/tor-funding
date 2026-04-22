@@ -1,0 +1,82 @@
+/* Tor × FTC QF — global styles
+ * Imports tokens, sets theme surfaces, honours reduced-motion.
+ *
+ * TODO(v1-fonts): currently loads Inter / Space Grotesk / Space Mono from
+ * Google Fonts for bootstrap speed. For production we must self-host
+ * (torproject.org privacy policy forbids third-party fetches without an
+ * explicit privacy review). Swap to next/font/local with bundled WOFF2.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@700&family=Space+Mono&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg:         theme('colors.ink.50');
+    --surface:    #FFFFFF;
+    --surface-2:  theme('colors.ink.50');
+    --fg:         theme('colors.ink.800');
+    --muted:      theme('colors.ink.500');
+    --border:     theme('colors.ink.100');
+    --brand:      theme('colors.purple.500');
+    --brand-soft: theme('colors.purple.50');
+    --pool:       theme('colors.pool.500');
+    --pool-soft:  theme('colors.pool.50');
+    --focus:      theme('colors.purple.500');
+  }
+
+  .dark {
+    --bg:         theme('colors.ink.950');
+    --surface:    theme('colors.ink.900');
+    --surface-2: #121D28;
+    --fg:         #E4EAF0;
+    --muted:      theme('colors.ink.400');
+    --border:     theme('colors.ink.700');
+    --brand:      theme('colors.purple.300');
+    --brand-soft: #2A1840;
+    --pool:       theme('colors.pool.300');
+    --pool-soft:  #3A2411;
+    --focus:      theme('colors.purple.300');
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: theme('fontFamily.sans');
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ≥44px tap target for anything interactive on touch devices */
+  @media (hover: none) {
+    button, a, [role="button"], [role="tab"] {
+      min-height: 44px;
+    }
+  }
+
+  /* Visible focus ring (WCAG 2.1 AA 2.4.7) */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Respect reduced-motion — counter, feed-in, pulse */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Address / mono text — NEVER truncate with ellipsis */
+  .address-mono {
+    font-family: theme('fontFamily.mono');
+    word-break: break-all;    /* wrap on any char */
+    overflow-wrap: anywhere;
+    white-space: normal;
+    text-overflow: clip;      /* belt-and-braces — no '…' */
+  }
+}
