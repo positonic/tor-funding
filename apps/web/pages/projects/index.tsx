@@ -1,7 +1,6 @@
 import type { GetStaticProps } from 'next';
 import { Layout } from '@/components/Layout';
 import { ProjectGrid } from '@/components/ProjectGrid';
-import { UpdatedChip } from '@/components/UpdatedChip';
 import { useSnapshot } from '@/lib/snapshot';
 import {
   loadProjectsConfig,
@@ -34,20 +33,14 @@ function seedToProject(p: ProjectConfigEntry): Project {
 }
 
 export default function ProjectsIndex({ seedProjects }: ProjectsIndexProps) {
-  const { snapshot, isStale, updatedAt } = useSnapshot();
+  const { snapshot } = useSnapshot();
 
-  // Before the snapshot lands, show the seeded project list with zeroed
-  // numbers so the grid renders immediately on static navigation.
   const projects: readonly Project[] =
     snapshot?.projects ?? seedProjects.map(seedToProject);
 
   return (
     <Layout title="Projects" description="All Tor sub-projects in the round.">
-      <div className="mx-auto max-w-6xl px-panel py-8">
-        <div className="flex items-center justify-between mb-4">
-          <div />
-          <UpdatedChip updatedAt={updatedAt} isStale={isStale} />
-        </div>
+      <div className="mx-auto max-w-7xl px-panel md:px-8 py-10 md:py-14">
         <ProjectGrid projects={projects} />
       </div>
     </Layout>
