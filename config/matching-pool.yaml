@@ -1,0 +1,50 @@
+# Source-of-truth matching-pool address config.
+# Consumed by the tracker to watch pool-funding contributions and by the
+# web app (at build time) to render the /matching-pool page.
+#
+# Spec references:
+#   §11    — matching pool mechanics
+#   §17.5  — task 37 (this config schema)
+#   §10    — view key handling
+#   §6     — per-chain eligibility
+#
+# NOTE: addresses below are placeholders lifted from sample-data/snapshot.json.
+#       They MUST be replaced with real pool-controlled addresses before
+#       launch (May 19, 2026).
+
+version: 1
+
+pool:
+  name: "Tor Project QF Round Matching Pool"
+  custody_entity: "Tor Project / Commons Lab (TBD — see spec §18 Q5)"
+  addresses:
+    btc:
+      address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+      ticker: BTC
+      label: Bitcoin
+      uri_scheme: bitcoin
+      verification: public
+      btcpay_store_id: "store_matching_pool"
+    eth:
+      address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0b1F8"
+      ticker: ETH
+      label: Ethereum
+      uri_scheme: ethereum
+      verification: public
+    sol:
+      address: "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5vpesT"
+      ticker: SOL
+      label: Solana
+      uri_scheme: solana
+      verification: public
+    zec_t:
+      address: "t1RxY3vJq4kXSLGcqsqXAiqPGCbA8MsbCp2"
+      ticker: ZEC-t
+      label: "Zcash (transparent)"
+      verification: public
+    xmr:
+      address: "44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A"
+      ticker: XMR
+      label: Monero
+      verification: view_key
+      view_key_secret_ref: "vault://kv/tor-campaign/xmr/matching-pool/view_key"

@@ -1,0 +1,28 @@
+{
+  "name": "@tor/types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared TypeScript types for the Tor QF campaign — the snapshot.json contract between the tracker (writer) and the web app (reader). Pure types, no runtime deps.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./chains": {
+      "types": "./dist/chains.d.ts",
+      "default": "./dist/chains.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

@@ -1,0 +1,161 @@
+# Source-of-truth project + address config.
+# Consumed by the tracker (apps/tracker/src/config/projects.yaml loader) to
+# seed the DB and to know which addresses to watch. The web app reads
+# long-form copy via getStaticProps at build time.
+#
+# Spec references:
+#   §6   — per-chain matching eligibility rules
+#   §10  — view key handling
+#   §13  — snapshot contract
+#   §14.1 — tracker process structure
+#   §6.4 — onboarding artifact shape
+#
+# HOW TO ADD A PROJECT: see config/README.md.
+# HOW TO ADD A CHAIN:   see config/README.md.
+#
+# NOTE: addresses below are placeholders lifted from sample-data/snapshot.json.
+#       They MUST be replaced with real, project-controlled addresses before
+#       launch (May 19, 2026).
+
+version: 1
+
+projects:
+  - id: anti-censorship
+    name: "Anti-Censorship Team"
+    short_desc: "Bridges, pluggable transports, and circumvention tools"
+    long_desc_md: |
+      The Anti-Censorship Team builds the tools that keep Tor reachable
+      from networks that try to block it. That includes **bridges**
+      (unpublished Tor entry nodes), **pluggable transports** (obfs4,
+      Snowflake, WebTunnel, meek) that make Tor traffic look like
+      ordinary web traffic, and the **circumvention infrastructure**
+      that routes users in heavily-censored regions onto the network.
+
+      Your donation directly funds engineering and network operations
+      for the people in Iran, Russia, China, and elsewhere who rely on
+      Tor to reach the uncensored internet.
+    order_index: 1
+    active: true
+    matching_eligible_chains: [btc, eth, sol, zec_t, xmr]
+    donation_addresses:
+      btc:
+        address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+        ticker: BTC
+        label: Bitcoin
+        is_matching_eligible: true
+        uri_scheme: bitcoin
+        verification: public
+        btcpay_store_id: "store_anti_censorship"
+      eth:
+        address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0b1F8"
+        ticker: ETH
+        label: Ethereum
+        is_matching_eligible: true
+        uri_scheme: ethereum
+        verification: public
+      sol:
+        address: "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5vpesT"
+        ticker: SOL
+        label: Solana
+        is_matching_eligible: true
+        uri_scheme: solana
+        verification: public
+      zec_t:
+        address: "t1RxY3vJq4kXSLGcqsqXAiqPGCbA8MsbCp2"
+        ticker: ZEC-t
+        label: "Zcash (transparent)"
+        is_matching_eligible: true
+        verification: public
+      xmr:
+        address: "44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A"
+        ticker: XMR
+        label: Monero
+        is_matching_eligible: true
+        verification: view_key
+        view_key_secret_ref: "vault://kv/tor-campaign/xmr/anti-censorship/view_key"
+
+  - id: tor-browser
+    name: "Tor Browser"
+    short_desc: "The anonymous browser used by millions"
+    long_desc_md: |
+      Tor Browser is the most widely-used privacy-preserving web browser
+      in the world. It ships hardened defaults, fingerprinting
+      resistance, and first-party isolation on top of Firefox ESR, and
+      it routes every request through the Tor network by default.
+
+      Funding here goes to browser engineering: security releases,
+      Android parity, usability work, and the long tail of fingerprint-
+      ing defences that keep Tor Browser one step ahead of commercial
+      tracking.
+    order_index: 2
+    active: true
+    matching_eligible_chains: [btc, eth, sol, zec_t]
+    donation_addresses:
+      btc:
+        address: "bc1qtorbrowser000000000000000000000000000"
+        ticker: BTC
+        label: Bitcoin
+        is_matching_eligible: true
+        uri_scheme: bitcoin
+        verification: public
+        btcpay_store_id: "store_tor_browser"
+      eth:
+        address: "0xTorBrowser0000000000000000000000000000000"
+        ticker: ETH
+        label: Ethereum
+        is_matching_eligible: true
+        uri_scheme: ethereum
+        verification: public
+      sol:
+        address: "TorBrowserSo1anaP1acehoLderAddressXXXXXXXXX"
+        ticker: SOL
+        label: Solana
+        is_matching_eligible: true
+        uri_scheme: solana
+        verification: public
+      zec_t:
+        address: "t1TorBrowserZcashTransparent000000000"
+        ticker: ZEC-t
+        label: "Zcash (transparent)"
+        is_matching_eligible: true
+        verification: public
+
+  - id: arti
+    name: "Arti — Tor in Rust"
+    short_desc: "Next-generation Tor implementation"
+    long_desc_md: |
+      Arti is the ongoing rewrite of the Tor protocol stack in Rust.
+      It's designed to be embeddable as a library, memory-safe by
+      construction, and easier for third parties to audit. Once it
+      reaches feature parity with the C implementation, it will become
+      the default Tor client.
+
+      Your donation funds the core Rust engineering team: protocol
+      implementation, async runtime work, API stabilisation, and the
+      long tail of spec-compliance work required before the cutover.
+    order_index: 3
+    active: true
+    matching_eligible_chains: [btc, eth, xmr]
+    donation_addresses:
+      btc:
+        address: "bc1qarti0000000000000000000000000000000000"
+        ticker: BTC
+        label: Bitcoin
+        is_matching_eligible: true
+        uri_scheme: bitcoin
+        verification: public
+        btcpay_store_id: "store_arti"
+      eth:
+        address: "0xArti00000000000000000000000000000000000000"
+        ticker: ETH
+        label: Ethereum
+        is_matching_eligible: true
+        uri_scheme: ethereum
+        verification: public
+      xmr:
+        address: "44ArtiMoneroPlaceholderAddress000000000000000000000000000000000000000000000000000000000000000000"
+        ticker: XMR
+        label: Monero
+        is_matching_eligible: true
+        verification: view_key
+        view_key_secret_ref: "vault://kv/tor-campaign/xmr/arti/view_key"
