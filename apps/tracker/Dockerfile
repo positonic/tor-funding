@@ -51,7 +51,7 @@ COPY --from=builder --chown=tracker:tracker /build/node_modules ./node_modules
 COPY --from=builder --chown=tracker:tracker /build/packages/types ./packages/types
 COPY --from=builder --chown=tracker:tracker /build/apps/tracker/dist ./apps/tracker/dist
 COPY --from=builder --chown=tracker:tracker /build/apps/tracker/package.json ./apps/tracker/package.json
-COPY --from=builder --chown=tracker:tracker /build/apps/tracker/src/db/migrations ./apps/tracker/src/db/migrations
+COPY --from=builder --chown=tracker:tracker /build/apps/tracker/src/db/migrations ./apps/tracker/dist/apps/tracker/src/db/migrations
 
 # Project + matching-pool YAML config (repo-root `config/`, read at boot).
 COPY --chown=tracker:tracker config ./config
