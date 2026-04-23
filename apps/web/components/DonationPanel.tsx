@@ -14,6 +14,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import type { Chain, ChainAddress, WalletDeepLink } from '@tor/types';
 import { copyToClipboard } from '@/lib/copy';
 import { buildWalletDeepLink } from '@/lib/wallet-links';
+import { TEST_MODE } from '@/lib/test-mode';
 import { ChainTab } from './ChainTab';
 import { Button } from './Button';
 import { TransparencyBadge } from './TransparencyBadge';
@@ -159,17 +160,30 @@ export function DonationPanel({
         </div>
 
         <figure className="flex flex-col items-center md:items-end">
-          <div
-            className="p-3 rounded-card bg-white border border-ink-100"
-            aria-label={`QR code for ${current.label} address`}
-          >
-            <QRCodeSVG
-              value={current.uri ?? current.address}
-              size={240}
-              level="M"
-              marginSize={0}
-            />
-          </div>
+          {TEST_MODE ? (
+            <div
+              role="alert"
+              className="p-3 rounded-card bg-danger-bg border border-danger text-danger-fg flex items-center justify-center text-center font-mono text-caption"
+              style={{ width: 264, height: 264 }}
+              aria-label="QR code hidden in test mode"
+            >
+              QR disabled
+              <br />
+              in test mode
+            </div>
+          ) : (
+            <div
+              className="p-3 rounded-card bg-white border border-ink-100"
+              aria-label={`QR code for ${current.label} address`}
+            >
+              <QRCodeSVG
+                value={current.uri ?? current.address}
+                size={240}
+                level="M"
+                marginSize={0}
+              />
+            </div>
+          )}
           <figcaption className="mt-2 text-caption text-ink-500 dark:text-ink-400 font-mono">
             {current.ticker}
           </figcaption>
@@ -177,21 +191,39 @@ export function DonationPanel({
       </div>
 
       {/* Actions — copy primary, wallet deep link secondary */}
-      <div className="mt-5 grid gap-2 md:grid-cols-[1fr_auto]">
-        <Button kind={ctaKind} fullWidth onClick={handleCopy} aria-live="polite">
-          {copied ? 'Copied ✓' : `Copy ${current.ticker} address`}
-        </Button>
-        {walletLink && (
+      {TEST_MODE ? (
+        <div
+          role="alert"
+          className="mt-5 p-3 rounded-card bg-danger-bg border border-danger text-danger-fg text-caption text-center"
+        >
+          <strong className="uppercase tracking-wider font-mono">
+            Test mode
+          </strong>{' '}
+          — donation actions disabled. The address above is a placeholder; do
+          not send funds.
+        </div>
+      ) : (
+        <div className="mt-5 grid gap-2 md:grid-cols-[1fr_auto]">
           <Button
-            kind="ghost"
-            as="a"
-            href={walletLink.href}
-            onClick={() => onEvent?.('wallet', { chain })}
+            kind={ctaKind}
+            fullWidth
+            onClick={handleCopy}
+            aria-live="polite"
           >
-            Open in {walletLink.walletName}
+            {copied ? 'Copied ✓' : `Copy ${current.ticker} address`}
           </Button>
-        )}
-      </div>
+          {walletLink && (
+            <Button
+              kind="ghost"
+              as="a"
+              href={walletLink.href}
+              onClick={() => onEvent?.('wallet', { chain })}
+            >
+              Open in {walletLink.walletName}
+            </Button>
+          )}
+        </div>
+      )}
     </section>
   );
 }

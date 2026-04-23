@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app';
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { resolveInitialTheme, applyTheme } from '@/lib/theme';
+import { TestModeBanner } from '@/components/TestModeBanner';
 import '@/styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -28,6 +29,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <TestModeBanner />
       <Component {...pageProps} />
     </QueryClientProvider>
   );
