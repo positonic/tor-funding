@@ -66,4 +66,4 @@ WORKDIR /app/apps/tracker
 
 EXPOSE 8080
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/apps/tracker/src/index.js"]
