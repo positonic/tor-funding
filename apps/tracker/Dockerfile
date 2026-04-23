@@ -53,6 +53,9 @@ COPY --from=builder --chown=tracker:tracker /build/apps/tracker/dist ./apps/trac
 COPY --from=builder --chown=tracker:tracker /build/apps/tracker/package.json ./apps/tracker/package.json
 COPY --from=builder --chown=tracker:tracker /build/apps/tracker/src/db/migrations ./apps/tracker/src/db/migrations
 
+# Project + matching-pool YAML config (repo-root `config/`, read at boot).
+COPY --chown=tracker:tracker config ./config
+
 # Writable runtime state dirs.
 RUN mkdir -p /app/apps/tracker/data /app/apps/tracker/out \
  && chown -R tracker:tracker /app/apps/tracker/data /app/apps/tracker/out
