@@ -8,7 +8,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Snapshot } from '@tor/types';
 
-const SNAPSHOT_URL = '/snapshot.json';
+const SNAPSHOT_URL = process.env.NEXT_PUBLIC_SNAPSHOT_URL ?? '/snapshot.json';
 const POLL_MS = 60_000;
 // Mark data stale at 2× the poll interval — if we're falling that far
 // behind, the "Updated Xs ago" chip should warn the donor.

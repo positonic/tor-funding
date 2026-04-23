@@ -8,6 +8,8 @@
  * §14.3 lands in §17.10.
  */
 
+import { readFile } from 'node:fs/promises';
+
 import Fastify, { type FastifyInstance } from 'fastify';
 
 import type { Db } from '../db/client.js';
@@ -39,8 +41,21 @@ export async function startAdminServer(
 
   app.get('/healthz', async () => ({ ok: true }));
 
+  if (process.env.ENABLE_PUBLIC_SNAPSHOT === '1') {
+    const snapshotPath =
+      process.env.SNAPSHOT_OUTPUT_PATH ?? './out/snapshot.json';
+    app.get('/snapshot.json', async (_req, reply) => {
+      const body = await readFile(snapshotPath);
+      return reply
+        .header('access-control-allow-origin', '*')
+        .header('cache-control', 'public, max-age=30, must-revalidate')
+        .type('application/json')
+        .send(body);
+    });
+  }
+
   const port = opts.port ?? Number(process.env.ADMIN_PORT ?? 8080);
-  const host = opts.host ?? '127.0.0.1';
+  const host = opts.host ?? process.env.ADMIN_HOST ?? '127.0.0.1';
   await app.listen({ port, host });
   logger.info({ port, host }, 'admin server listening');
   return app;
